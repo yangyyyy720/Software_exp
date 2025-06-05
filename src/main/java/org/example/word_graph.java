@@ -37,6 +37,7 @@ public class word_graph extends JFrame {
     // 在类成员变量区添加：
     private volatile boolean stopRandomWalk = false;
     private List<String> wordsList = new ArrayList<>();
+    private boolean initUI = true;
 
 
     /**
@@ -87,6 +88,15 @@ public class word_graph extends JFrame {
         super("yyq WordGraph");
         graph = new DefaultDirectedWeightedGraph<>(DefaultWeightedEdge.class);
         initUI();
+    }
+    // 新增构造函数用于测试
+    public word_graph(boolean initUI) {
+        this.initUI = initUI;
+        if(initUI){
+
+            graph = new DefaultDirectedWeightedGraph<>(DefaultWeightedEdge.class);
+            initUI();
+        }
     }
 
     private void initUI() {
@@ -283,7 +293,7 @@ public class word_graph extends JFrame {
     }
 
     /** 5. 最短路径（Dijkstra） **/
-    private void shortestPath() {
+    public void shortestPath() {
         String from = JOptionPane.showInputDialog(this, "请输入起点单词（或仅输入一个单词）：");
         if (from == null || from.isEmpty()) return;
 
@@ -561,6 +571,53 @@ public class word_graph extends JFrame {
 
     // 为了编写测试单元 需要实现查询桥接词
     /** 查询桥接词：public 用于测试调用 **/
+    public String calcShortestPath(DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph,
+                                   String word1, String word2) {
+        // 检查图是否为空
+        if (graph == null) {
+            return "Graph is null!";
+        }
+
+        // 检查word1是否存在
+        if (!graph.containsVertex(word1)) {
+            return "No \"" + word1 + "\" in the graph!";
+        }
+
+        // 检查word2是否存在
+        if (!graph.containsVertex(word2)) {
+            return "No \"" + word2 + "\" in the graph!";
+        }
+
+        // 如果是同一个单词
+        if (word1.equals(word2)) {
+            return word1;
+        }
+
+        // 使用Dijkstra算法计算最短路径
+        DijkstraShortestPath<String, DefaultWeightedEdge> dijkstra =
+                new DijkstraShortestPath<>(graph);
+        GraphPath<String, DefaultWeightedEdge> path = dijkstra.getPath(word1, word2);
+
+        // 检查是否可达
+        if (path == null) {
+            return String.format("从 %s 到 %s 不可达。", word1, word2);
+        }
+
+        // 构建路径字符串
+        StringBuilder sb = new StringBuilder();
+        List<String> vertexList = path.getVertexList();
+
+        for (int i = 0; i < vertexList.size(); i++) {
+            if (i > 0) {
+                sb.append(" -> ");
+            }
+            sb.append(vertexList.get(i));
+        }
+
+        return sb.toString();
+    }
+
+
     public String queryBridgeWords(String w1, String w2) {
         w1 = w1.toLowerCase();
         w2 = w2.toLowerCase();
